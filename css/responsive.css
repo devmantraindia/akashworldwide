@@ -1,0 +1,691 @@
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+/* Tablet (768px and below) */
+@media (max-width: 1024px) {
+    .main-layout {
+        grid-template-columns: 1fr 280px;
+        gap: 16px;
+        padding: 90px 16px 40px;
+    }
+
+    .sidebar {
+        display: none;
+    }
+
+    .hero-container {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .hero-title {
+        font-size: 36px;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    .services-grid {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 12px;
+    }
+
+    .service-card {
+        padding: 16px;
+    }
+
+    .service-icon {
+        font-size: 28px;
+    }
+
+    .blog-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 16px;
+    }
+
+    .partners-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 12px;
+    }
+
+    .partner-logo {
+        font-size: 14px;
+        min-height: 80px;
+        padding: 16px;
+    }
+
+    .welcome-card {
+        position: static;
+        width: auto;
+        margin-bottom: 20px;
+    }
+
+    .nav-menu {
+        gap: 4px;
+    }
+
+    .nav-link {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+
+    .hero {
+        padding: 30px;
+    }
+}
+
+/* Mobile Landscape & Small Tablets (768px) */
+@media (max-width: 768px) {
+    .main-layout {
+        grid-template-columns: 1fr;
+        padding: 80px 12px 40px;
+    }
+
+    .right-sidebar {
+        display: none;
+    }
+
+    .header {
+        padding: 0 12px;
+    }
+
+    .nav-container {
+        gap: 12px;
+    }
+
+    .nav-logo {
+        gap: 8px;
+    }
+
+    .logo-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+    }
+
+    .logo-brand {
+        font-size: 12px;
+    }
+
+    .logo-tagline {
+        font-size: 10px;
+    }
+
+    .nav-menu {
+        display: none;
+    }
+
+    .menu-toggle {
+        display: flex;
+    }
+
+    .nav-menu.active {
+        display: flex;
+        position: absolute;
+        top: 70px;
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        background: var(--bg-secondary);
+        border-bottom: 1px solid var(--border-color);
+        padding: 12px;
+        gap: 0;
+        z-index: 999;
+    }
+
+    .nav-link {
+        padding: 12px 16px;
+    }
+
+    .nav-link::after {
+        display: none;
+    }
+
+    .hero {
+        padding: 24px;
+        border-radius: 12px;
+    }
+
+    .hero-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .hero-title {
+        font-size: 28px;
+    }
+
+    .hero-subtitle {
+        font-size: 14px;
+    }
+
+    .hero-right {
+        height: 220px;
+        display: none;
+    }
+
+    .search-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-input {
+        width: 100%;
+    }
+
+    .btn-search {
+        width: 100%;
+    }
+
+    .section-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .section-header h2 {
+        font-size: 24px;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .stat-card {
+        padding: 16px;
+    }
+
+    .stat-number {
+        font-size: 24px;
+    }
+
+    .stat-label {
+        font-size: 12px;
+    }
+
+    .services-grid {
+        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+        gap: 10px;
+    }
+
+    .service-card {
+        padding: 12px;
+        gap: 6px;
+    }
+
+    .service-icon {
+        font-size: 24px;
+    }
+
+    .service-name {
+        font-size: 11px;
+    }
+
+    .blog-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .blog-card {
+        display: flex;
+        gap: 12px;
+    }
+
+    .blog-image {
+        width: 120px;
+        height: 80px;
+        flex-shrink: 0;
+        border-radius: 8px;
+    }
+
+    .blog-content {
+        padding: 0;
+        flex: 1;
+    }
+
+    .blog-meta {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .blog-title {
+        font-size: 13px;
+    }
+
+    .partners-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px;
+    }
+
+    .partner-logo {
+        font-size: 12px;
+        min-height: 70px;
+        padding: 12px;
+    }
+
+    .welcome-card {
+        padding: 16px;
+    }
+
+    .welcome-avatar {
+        font-size: 32px;
+    }
+
+    .welcome-name {
+        font-size: 16px;
+    }
+
+    .nav-right {
+        gap: 8px;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+
+    .btn-login,
+    .btn-signup {
+        display: none;
+    }
+
+    .footer {
+        padding: 24px 12px;
+    }
+
+    .footer-features {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+    }
+
+    .footer-bottom {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .footer-copyright {
+        text-align: center;
+        font-size: 12px;
+    }
+
+    .chat-btn {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+        bottom: 20px;
+        right: 20px;
+    }
+}
+
+/* Small Mobile (480px and below) */
+@media (max-width: 480px) {
+    .navbar {
+        padding: 0 12px;
+        height: 60px;
+    }
+
+    .nav-container {
+        gap: 8px;
+    }
+
+    .logo-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+    }
+
+    .logo-brand {
+        font-size: 11px;
+    }
+
+    .nav-right {
+        gap: 6px;
+    }
+
+    .btn-theme-toggle {
+        width: 36px;
+        height: 36px;
+    }
+
+    .btn-theme-toggle svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .main-layout {
+        padding: 70px 8px 30px;
+        gap: 12px;
+    }
+
+    .hero {
+        padding: 16px;
+        border-radius: 8px;
+    }
+
+    .hero-title {
+        font-size: 22px;
+    }
+
+    .hero-subtitle {
+        font-size: 12px;
+    }
+
+    .popular-searches {
+        gap: 8px;
+    }
+
+    .search-tags {
+        gap: 6px;
+    }
+
+    .search-tag {
+        padding: 4px 10px;
+        font-size: 11px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .stat-card {
+        padding: 12px;
+    }
+
+    .stat-number {
+        font-size: 20px;
+    }
+
+    .stat-label {
+        font-size: 11px;
+    }
+
+    .section-header {
+        gap: 8px;
+    }
+
+    .section-header h2 {
+        font-size: 20px;
+    }
+
+    .view-all {
+        font-size: 12px;
+    }
+
+    .services-grid {
+        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+        gap: 8px;
+    }
+
+    .service-card {
+        padding: 10px;
+        gap: 4px;
+    }
+
+    .service-icon {
+        font-size: 20px;
+    }
+
+    .service-name {
+        font-size: 10px;
+    }
+
+    .blog-grid {
+        gap: 10px;
+    }
+
+    .blog-card {
+        gap: 10px;
+    }
+
+    .blog-image {
+        width: 100px;
+        height: 70px;
+    }
+
+    .blog-category {
+        padding: 2px 6px;
+        font-size: 10px;
+    }
+
+    .blog-title {
+        font-size: 12px;
+    }
+
+    .blog-link {
+        font-size: 11px;
+    }
+
+    .partners-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .partner-logo {
+        font-size: 11px;
+        min-height: 60px;
+        padding: 8px;
+    }
+
+    .welcome-card {
+        padding: 12px;
+        width: auto;
+    }
+
+    .welcome-avatar {
+        font-size: 28px;
+    }
+
+    .welcome-label {
+        font-size: 11px;
+    }
+
+    .welcome-name {
+        font-size: 14px;
+    }
+
+    .welcome-description {
+        font-size: 12px;
+    }
+
+    .welcome-actions {
+        gap: 6px;
+    }
+
+    .welcome-actions .btn {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+
+    .footer {
+        padding: 16px 8px;
+    }
+
+    .footer-features {
+        gap: 10px;
+        padding-bottom: 16px;
+    }
+
+    .footer-feature {
+        font-size: 12px;
+        gap: 8px;
+    }
+
+    .footer-feature .feature-icon {
+        font-size: 20px;
+    }
+
+    .footer-social {
+        justify-content: center;
+        gap: 12px;
+    }
+
+    .social-link {
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
+    }
+
+    .chat-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 18px;
+    }
+
+    .btn {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    .notification-badge {
+        width: 18px;
+        height: 18px;
+        font-size: 10px;
+    }
+}
+
+/* Extra Small Mobile (360px and below) */
+@media (max-width: 360px) {
+    .logo-brand {
+        display: none;
+    }
+
+    .logo-tagline {
+        display: none;
+    }
+
+    .nav-logo {
+        gap: 4px;
+    }
+
+    .logo-icon {
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+    }
+
+    .hero-title {
+        font-size: 18px;
+    }
+
+    .hero-subtitle {
+        font-size: 11px;
+    }
+
+    .search-label {
+        font-size: 12px;
+    }
+
+    .search-tags {
+        gap: 4px;
+    }
+
+    .services-grid {
+        grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+        gap: 6px;
+    }
+
+    .service-card {
+        padding: 8px;
+    }
+
+    .service-icon {
+        font-size: 18px;
+    }
+
+    .section-header h2 {
+        font-size: 18px;
+    }
+
+    .partners-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .blog-card {
+        gap: 8px;
+    }
+
+    .blog-image {
+        width: 80px;
+        height: 60px;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .header,
+    .sidebar,
+    .chat-widget,
+    .nav-right,
+    .menu-toggle {
+        display: none !important;
+    }
+
+    .main-layout {
+        grid-template-columns: 1fr;
+        padding: 20px;
+    }
+
+    body {
+        background: white;
+        color: black;
+    }
+
+    .hero,
+    .service-card,
+    .blog-card,
+    .partner-logo {
+        page-break-inside: avoid;
+    }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Dark Mode Detection */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: var(--bg-primary);
+        color: var(--text-white);
+    }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: more) {
+    .border-color {
+        border-color: var(--text-white);
+    }
+
+    .text-muted {
+        color: var(--text-light);
+    }
+}
+
+/* Touch Device Optimization */
+@media (hover: none) and (pointer: coarse) {
+    .btn,
+    .service-card,
+    .blog-card,
+    .partner-logo {
+        padding: 16px;
+        min-height: 44px;
+    }
+
+    .social-link {
+        width: 48px;
+        height: 48px;
+    }
+}
