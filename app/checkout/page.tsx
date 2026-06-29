@@ -11,7 +11,7 @@ import { Heart, Shield, Clock, AlertCircle } from 'lucide-react'
 import { formatCurrency } from '@/lib/payment-utils'
 
 export default function CheckoutPage() {
-  const supabase = createClient()
+  const [supabase, setSupabase] = useState<any>(null)
   const router = useRouter()
   const [selectedService, setSelectedService] = useState<string | null>(null)
   const [services, setServices] = useState<any[]>([])
@@ -21,19 +21,21 @@ export default function CheckoutPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    setSupabase(createClient())
     loadData()
   }, [])
 
   async function loadData() {
     try {
-      const { data: { user: authUser } } = await supabase.auth.getUser()
+      const client = createClient()
+      const { data: { user: authUser } } = await client.auth.getUser()
       if (!authUser) {
         router.push('/auth/login')
         return
       }
       setUser(authUser)
 
-      const { data, error: err } = await supabase
+      const { data, error: err } = await client
         .from('services')
         .select('*')
         .eq('is_active', true)

@@ -10,9 +10,10 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'akashworldwide - Digital Services Platform',
-  description: 'Your trusted digital service partner. 100+ services, secure, fast, and reliable.',
-  generator: 'v0.app',
+  title: 'akashworldwide - Digital Services Platform | PAN, Aadhaar, Passport & More',
+  description: 'Your trusted digital service partner. 100+ services including PAN cards, Aadhaar, Passport, and more. Secure, fast, and reliable.',
+  keywords: ['digital services', 'PAN card', 'Aadhaar', 'Passport', 'online services', 'secure transactions'],
+  generator: 'Next.js',
   icons: {
     icon: [
       {
@@ -29,6 +30,43 @@ export const metadata: Metadata = {
       },
     ],
     apple: '/apple-icon.png',
+  },
+  authors: [
+    {
+      name: 'AkashWorldwide',
+      url: 'https://akashworldwide.com',
+    },
+  ],
+  openGraph: {
+    title: 'akashworldwide - Digital Services Platform',
+    description: 'Your trusted digital service partner with 100+ services.',
+    url: 'https://akashworldwide.com',
+    siteName: 'AkashWorldwide',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+      },
+    ],
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'akashworldwide - Digital Services Platform',
+    description: 'Your trusted digital service partner with 100+ services.',
+    images: ['/og-image.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-snippet': -1,
+      'max-image-preview': 'large',
+      'max-video-preview': -1,
+    },
   },
 }
 

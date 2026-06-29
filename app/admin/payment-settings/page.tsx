@@ -11,7 +11,7 @@ import { Upload, Trash2, Eye, Save, AlertCircle } from 'lucide-react';
 import { validateImageFile, formatCurrency } from '@/lib/payment-utils';
 
 export default function PaymentSettingsPage() {
-  const supabase = createClient();
+  const [supabase, setSupabase] = useState<any>(null);
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -34,13 +34,15 @@ export default function PaymentSettingsPage() {
 
   // Load settings on mount
   useEffect(() => {
+    setSupabase(createClient());
     loadSettings();
   }, []);
 
   async function loadSettings() {
     try {
       setLoading(true);
-      const { data, error: err } = await supabase
+      const client = createClient();
+      const { data, error: err } = await client
         .from('payment_settings')
         .select('*')
         .limit(1)

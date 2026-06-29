@@ -12,7 +12,7 @@ import { copyToClipboard, generateUPIDeepLink, formatCurrency } from '@/lib/paym
 import { useRouter } from 'next/navigation';
 
 export default function PaymentPage({ params }: { params: { orderId: string } }) {
-  const supabase = createClient();
+  const [supabase, setSupabase] = useState<any>(null);
   const router = useRouter();
   const [order, setOrder] = useState<any>(null);
   const [paymentSettings, setPaymentSettings] = useState<any>(null);
@@ -21,6 +21,7 @@ export default function PaymentPage({ params }: { params: { orderId: string } })
   const [showPaymentForm, setShowPaymentForm] = useState(false);
 
   useEffect(() => {
+    setSupabase(createClient());
     loadPaymentData();
   }, []);
 

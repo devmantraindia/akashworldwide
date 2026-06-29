@@ -20,7 +20,7 @@ import {
 import { formatCurrency } from '@/lib/payment-utils';
 
 export default function PaymentsPage() {
-  const supabase = createClient();
+  const [supabase, setSupabase] = useState<any>(null);
   const [payments, setPayments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPayment, setSelectedPayment] = useState<any>(null);
@@ -31,12 +31,19 @@ export default function PaymentsPage() {
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
   useEffect(() => {
-    loadPayments();
-  }, [filterStatus]);
+    setSupabase(createClient());
+  }, []);
+
+  useEffect(() => {
+    if (supabase) {
+      loadPayments();
+    }
+  }, [filterStatus, supabase]);
 
   async function loadPayments() {
     try {
       setLoading(true);
+      if (!supabase) return;
 
       let query = supabase
         .from('payments')
@@ -65,6 +72,7 @@ export default function PaymentsPage() {
       setPayments(data || []);
     } catch (err: any) {
       console.error('[v0] Error loading payments:', err);
+      setPayments([]);
     } finally {
       setLoading(false);
     }
