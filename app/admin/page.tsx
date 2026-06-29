@@ -1,15 +1,76 @@
 'use client'
 
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
-import { ArrowRight, Users, ShoppingCart, TrendingUp, AlertCircle } from 'lucide-react'
+import { ArrowRight, Users, ShoppingCart, TrendingUp, AlertCircle, CreditCard } from 'lucide-react'
 
 export default function AdminDashboardPage() {
+  const supabase = createClient()
+  const [paymentStats, setPaymentStats] = useState({
+    pendingCount: 0,
+    totalPaid: 0,
+    rejectedCount: 0,
+  })
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      loadPaymentStats()
+    }
+  }, [])
+
+  async function loadPaymentStats() {
+    try {
+      if (!supabase) return
+
+      // Get payment statistics
+      const { data: pending, error: e1 } = await supabase
+        .from('payments')
+        .select('id', { count: 'exact' })
+        .eq('payment_status', 'Pending Verification')
+        .limit(0)
+
+      if (e1) throw e1
+
+      const { data: paid, error: e2 } = await supabase
+        .from('payments')
+        .select('id', { count: 'exact' })
+        .eq('payment_status', 'Paid')
+        .limit(0)
+
+      if (e2) throw e2
+
+      const { data: rejected, error: e3 } = await supabase
+        .from('payments')
+        .select('id', { count: 'exact' })
+        .eq('payment_status', 'Rejected')
+        .limit(0)
+
+      if (e3) throw e3
+
+      setPaymentStats({
+        pendingCount: pending?.length || 0,
+        totalPaid: paid?.length || 0,
+        rejectedCount: rejected?.length || 0,
+      })
+    } catch (err) {
+      console.error('[v0] Error loading payment stats:', err)
+      // Set default stats on error
+      setPaymentStats({
+        pendingCount: 0,
+        totalPaid: 0,
+        rejectedCount: 0,
+      })
+    }
+  }
+
   const stats = [
     { label: 'Total Users', value: '50K+', icon: Users, color: 'text-blue-500', trend: '+12% this month' },
     { label: 'Total Orders', value: '25K+', icon: ShoppingCart, color: 'text-green-500', trend: '+8% this month' },
     { label: 'Revenue', value: '₹45L', icon: TrendingUp, color: 'text-purple-500', trend: '+15% this month' },
-    { label: 'Pending', value: '127', icon: AlertCircle, color: 'text-yellow-500', trend: 'Needs attention' },
+    { label: 'Pending Payments', value: paymentStats.pendingCount.toString(), icon: CreditCard, color: 'text-yellow-500', trend: 'Needs verification' },
   ]
 
   const recentOrders = [
@@ -111,23 +172,70 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
+      {/* Payment Statistics */}
+      <div className="grid md:grid-cols-3 gap-6">
+        <Card className="bg-card/40 border-card/50 backdrop-blur-xl">
+          <CardHeader>
+            <CardTitle className="text-sm">Pending Payments</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">{paymentStats.pendingCount}</p>
+            <p className="text-xs text-muted-foreground mt-2">Awaiting verification</p>
+            <Link href="/admin/payments">
+              <Button variant="outline" size="sm" className="mt-4 w-full">
+                Review Payments
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card/40 border-card/50 backdrop-blur-xl">
+          <CardHeader>
+            <CardTitle className="text-sm">Verified Payments</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold text-green-500">{paymentStats.totalPaid}</p>
+            <p className="text-xs text-muted-foreground mt-2">Successfully verified</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card/40 border-card/50 backdrop-blur-xl">
+          <CardHeader>
+            <CardTitle className="text-sm">Payment Settings</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">Configure UPI payment details</p>
+            <Link href="/admin/payment-settings">
+              <Button variant="outline" size="sm" className="w-full">
+                Configure UPI
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Quick Actions */}
       <div className="bg-card border border-border rounded-xl p-8">
         <h2 className="text-xl font-bold mb-6">Quick Actions</h2>
-        <div className="grid sm:grid-cols-3 gap-4">
+        <div className="grid sm:grid-cols-4 gap-4">
           <Link href="/admin/services">
             <Button variant="outline" className="w-full justify-start">
-              Add New Service
+              Add Service
             </Button>
           </Link>
-          <Link href="/admin/users">
+          <Link href="/admin/payment-settings">
             <Button variant="outline" className="w-full justify-start">
-              View Users
+              Payment Settings
+            </Button>
+          </Link>
+          <Link href="/admin/payments">
+            <Button variant="outline" className="w-full justify-start">
+              Verify Payments
             </Button>
           </Link>
           <Link href="/admin/analytics">
             <Button variant="outline" className="w-full justify-start">
-              View Analytics
+              Analytics
             </Button>
           </Link>
         </div>
