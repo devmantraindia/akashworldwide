@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { apiClient } from '@/lib/api-client';
-import { generateToken, verifyToken } from '@/lib/auth';
 import type { User } from '@/types';
 
 interface AuthContextType {
