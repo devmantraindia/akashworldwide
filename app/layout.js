@@ -1,5 +1,6 @@
 import './globals.css';
 import { Toaster } from '@/components/ui/sonner';
+import { Analytics } from '@vercel/analytics/next';
 
 export const metadata = {
   title: 'akashworldwide — 150+ Government & Utility Services Online',
@@ -17,6 +18,7 @@ const App = ({ children }) => {
       <body className="bg-mesh noise text-foreground antialiased min-h-screen">
         {children}
         <Toaster richColors position="top-center" theme="dark" />
+        <Analytics />
       </body>
     </html>
   );
