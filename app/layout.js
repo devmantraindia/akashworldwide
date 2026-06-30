@@ -2,10 +2,10 @@ import './globals.css';
 import { Toaster } from '@/components/ui/sonner';
 
 export const metadata = {
-  title: 'Digital Service Portal — 150+ Government & Utility Services Online',
-  description: 'Enterprise digital service portal for PAN, Aadhaar, Passport, GST, ITR, Insurance, Recharge, Booking and 150+ services. Fast, secure and trusted by 50,000+ users.',
-  keywords: 'PAN card, Aadhaar, Passport, GST, ITR, Voter ID, Driving Licence, Digital Services, eGov, CSC, BBPS',
-  openGraph: { title: 'Digital Service Portal', description: '150+ Digital Services. Trusted by 50,000+ users.', type: 'website' },
+  title: 'akashworldwide — 150+ Government & Utility Services Online',
+  description: 'akashworldwide is an enterprise digital service portal for PAN, Aadhaar, Passport, GST, ITR, Insurance, Recharge, Booking and 150+ services. Fast, secure and trusted by 50,000+ users.',
+  keywords: 'akashworldwide, PAN card, Aadhaar, Passport, GST, ITR, Voter ID, Driving Licence, Digital Services, eGov, CSC, BBPS',
+  openGraph: { title: 'akashworldwide', description: '150+ Digital Services. Trusted by 50,000+ users.', type: 'website' },
   icons: { icon: '/favicon.ico' },
 };
 

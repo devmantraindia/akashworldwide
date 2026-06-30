@@ -61,7 +61,7 @@ const App = () => {
       <aside className="w-64 glass-strong border-r border-white/10 p-5 hidden lg:flex flex-col fixed top-0 bottom-0 left-0">
         <div className="flex items-center gap-2 mb-8">
           <div className="w-9 h-9 rounded-xl btn-gradient flex items-center justify-center"><ShieldCheck className="w-5 h-5 text-white"/></div>
-          <div className="font-bold"><span className="gradient-text">Admin</span> Console</div>
+          <div className="font-bold"><span className="gradient-text">akashworldwide</span></div>
         </div>
         <nav className="space-y-1 flex-1">
           {[

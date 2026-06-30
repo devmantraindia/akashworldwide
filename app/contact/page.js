@@ -15,7 +15,7 @@ const App = () => (
       <h1 className="text-4xl md:text-6xl font-bold tracking-tighter mb-6">Let’s <span className="gradient-text">talk</span>.</h1>
       <p className="text-white/60 mb-10">Need help with a service? Have feedback? Want to partner with us? Reach out anytime.</p>
       <div className="grid md:grid-cols-3 gap-4 mb-10">
-        {[{i:Mail, t:'Email', v:'support@digitalportal.in'},{i:Phone, t:'Phone', v:'+91 80000 12345'},{i:MapPin, t:'Address', v:'Bangalore, India'}].map((c,i)=>(
+        {[{i:Mail, t:'Email', v:'support@akashworldwide.com'},{i:Phone, t:'Phone', v:'+91 80000 12345'},{i:MapPin, t:'Address', v:'Bangalore, India'}].map((c,i)=>(
           <Card key={i} className="glass border-white/5 p-5"><c.i className="w-5 h-5 text-purple-300 mb-2"/><div className="text-xs text-white/50">{c.t}</div><div className="font-semibold mt-1">{c.v}</div></Card>
         ))}
       </div>

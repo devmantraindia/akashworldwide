@@ -40,7 +40,7 @@ async function seed() {
       _id: 'global',
       qrImage: 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=upi%3A%2F%2Fpay%3Fpa%3Dpayments%40digitalportal%26pn%3DDigital%2520Portal%26cu%3DINR',
       upiId: 'payments@digitalportal',
-      payeeName: 'Digital Service Portal',
+  payeeName: 'akashworldwide',
     });
   }
 }

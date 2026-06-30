@@ -37,7 +37,7 @@ const App = () => {
           <Card className="glass-strong border-white/10 p-8">
             <div className="flex items-center gap-2 mb-5">
               <div className="w-10 h-10 rounded-xl btn-gradient flex items-center justify-center"><Sparkles className="w-5 h-5 text-white"/></div>
-              <div className="font-bold text-lg"><span className="gradient-text">Digital</span> Portal</div>
+              <div className="font-bold text-lg"><span className="gradient-text">akash</span><span className="text-white">worldwide</span></div>
             </div>
             <h1 className="text-3xl font-bold tracking-tight mb-1">Create account</h1>
             <p className="text-white/60 text-sm mb-6">Free forever. No credit card required.</p>

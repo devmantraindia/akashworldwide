@@ -12,9 +12,9 @@ export default function Footer() {
               <div className="w-9 h-9 rounded-xl btn-gradient flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
-              <div className="font-bold text-lg"><span className="gradient-text">Digital</span> Portal</div>
+              <div className="font-bold text-lg"><span className="gradient-text">akash</span><span className="text-white">worldwide</span></div>
             </Link>
-            <p className="text-white/60 text-sm leading-relaxed max-w-xs">India’s premium digital service portal. 150+ government & utility services available online, securely, with assistance.</p>
+            <p className="text-white/60 text-sm leading-relaxed max-w-xs">akashworldwide — India’s premium digital service portal. 150+ government & utility services online, securely with assistance.</p>
             <div className="flex gap-3 mt-5">
               {[Twitter, Linkedin, Github].map((Icon, i) => (
                 <a key={i} href="#" className="w-9 h-9 rounded-lg glass hover:bg-white/10 flex items-center justify-center text-white/70 hover:text-white transition">
@@ -46,14 +46,14 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold mb-4 text-white">Contact</h4>
             <ul className="space-y-3 text-sm text-white/60">
-              <li className="flex items-start gap-2"><Mail className="w-4 h-4 mt-0.5 text-purple-400" /><span>support@digitalportal.in</span></li>
+              <li className="flex items-start gap-2"><Mail className="w-4 h-4 mt-0.5 text-purple-400" /><span>support@akashworldwide.com</span></li>
               <li className="flex items-start gap-2"><Phone className="w-4 h-4 mt-0.5 text-purple-400" /><span>+91 80000 12345</span></li>
               <li className="flex items-start gap-2"><MapPin className="w-4 h-4 mt-0.5 text-purple-400" /><span>Bangalore, India</span></li>
             </ul>
           </div>
         </div>
         <div className="border-t border-white/5 mt-12 pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-white/40">
-          <div>© {new Date().getFullYear()} Digital Service Portal. All rights reserved.</div>
+          <div>© {new Date().getFullYear()} akashworldwide. All rights reserved.</div>
           <div className="flex gap-5">
             <Link href="#" className="hover:text-white">Privacy</Link>
             <Link href="#" className="hover:text-white">Terms</Link>

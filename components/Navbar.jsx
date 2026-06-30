@@ -45,7 +45,7 @@ export default function Navbar() {
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div className="font-bold text-lg tracking-tight">
-              <span className="gradient-text">Digital</span> Portal
+              <span className="gradient-text">akash</span><span className="text-white">worldwide</span>
             </div>
           </Link>
           <nav className="hidden lg:flex items-center gap-1">

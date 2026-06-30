@@ -38,7 +38,7 @@ const App = () => {
         <Card className="glass-strong border-white/10 p-8">
           <div className="flex items-center gap-2 mb-5">
             <div className="w-10 h-10 rounded-xl btn-gradient flex items-center justify-center"><ShieldCheck className="w-5 h-5 text-white"/></div>
-            <div className="font-bold text-lg"><span className="gradient-text">Admin</span> Console</div>
+            <div className="font-bold text-lg"><span className="gradient-text">akashworldwide</span> Admin</div>
           </div>
           <h1 className="text-3xl font-bold tracking-tight mb-1">Administrator login</h1>
           <p className="text-white/60 text-sm mb-6">Restricted access. Authorised personnel only.</p>

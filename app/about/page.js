@@ -13,7 +13,7 @@ const App = () => (
       <motion.div initial={{opacity:0, y:20}} animate={{opacity:1, y:0}}>
         <Badge variant="outline" className="mb-4 border-white/10">About us</Badge>
         <h1 className="text-4xl md:text-6xl font-bold tracking-tighter mb-6">Making digital services <span className="gradient-text">simple for India</span>.</h1>
-        <p className="text-lg text-white/70 leading-relaxed mb-12">Digital Service Portal is an enterprise-grade platform that lets Indians apply for any government, utility, banking or travel service from the comfort of their home. We partner with verified CSC, NPCI, BBPS and government agencies to deliver fast, secure and assisted experiences.</p>
+        <p className="text-lg text-white/70 leading-relaxed mb-12">akashworldwide is an enterprise-grade platform that lets Indians apply for any government, utility, banking or travel service from the comfort of their home. We partner with verified CSC, NPCI, BBPS and government agencies to deliver fast, secure and assisted experiences.</p>
         <div className="grid md:grid-cols-3 gap-5">
           {[
             { i: Users, t: '50,000+ users', d: 'Trusted across all 28 states' },
