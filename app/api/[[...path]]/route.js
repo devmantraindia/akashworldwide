@@ -73,6 +73,7 @@ export async function GET(req, { params }) {
       const cat = url.searchParams.get('category');
       const popular = url.searchParams.get('popular');
       let list = await db.collection('services').find({}, { projection: { _id: 0 } }).toArray();
+      list = list.filter(s => s.active !== false);
       if (cat) list = list.filter(s => s.category === cat);
       if (popular) list = list.filter(s => s.popular);
       if (q) list = list.filter(s => s.name.toLowerCase().includes(q) || s.description.toLowerCase().includes(q));
@@ -149,8 +150,81 @@ export async function GET(req, { params }) {
     }
     if (route === 'admin/customers') {
       const a = await requireAuth(req, ['admin', 'super_admin']); if (a.error) return a.error;
-      const customers = await db.collection('users').find({ role: 'customer' }, { projection: { _id: 0, password: 0 } }).sort({ createdAt: -1 }).toArray();
+      const q = url.searchParams.get('q')?.toLowerCase() || '';
+      let customers = await db.collection('users').find({ role: 'customer' }, { projection: { _id: 0, password: 0 } }).sort({ createdAt: -1 }).toArray();
+      if (q) customers = customers.filter(c => (c.name||'').toLowerCase().includes(q) || (c.email||'').toLowerCase().includes(q) || (c.phone||'').includes(q));
+      // attach order counts/spend
+      const orderAgg = await db.collection('orders').aggregate([
+        { $group: { _id: '$userId', orders: { $sum: 1 }, spent: { $sum: { $cond: [{ $in: ['$status', ['PROCESSING','APPROVED','COMPLETED']] }, '$amount', 0] } } } }
+      ]).toArray();
+      const map = Object.fromEntries(orderAgg.map(o => [o._id, o]));
+      customers = customers.map(c => ({ ...c, orderCount: map[c.id]?.orders || 0, totalSpent: map[c.id]?.spent || 0 }));
       return ok({ customers });
+    }
+    if (route.startsWith('admin/customers/')) {
+      const a = await requireAuth(req, ['admin', 'super_admin']); if (a.error) return a.error;
+      const id = route.split('/')[2];
+      const customer = await db.collection('users').findOne({ id }, { projection: { _id: 0, password: 0 } });
+      if (!customer) return err('Customer not found', 404);
+      const orders = await db.collection('orders').find({ userId: id }, { projection: { _id: 0 } }).sort({ createdAt: -1 }).toArray();
+      const totalSpent = orders.filter(o => ['PROCESSING','APPROVED','COMPLETED'].includes(o.status)).reduce((s, o) => s + (o.amount||0), 0);
+      return ok({ customer, orders, totalSpent });
+    }
+
+    // Admin: services (all, including inactive)
+    if (route === 'admin/services') {
+      const a = await requireAuth(req, ['admin', 'super_admin']); if (a.error) return a.error;
+      const services = await db.collection('services').find({}, { projection: { _id: 0 } }).toArray();
+      return ok({ services, categories: CATEGORIES });
+    }
+
+    // Admin: analytics
+    if (route === 'admin/analytics') {
+      const a = await requireAuth(req, ['admin', 'super_admin']); if (a.error) return a.error;
+      const allOrders = await db.collection('orders').find({}, { projection: { _id: 0 } }).toArray();
+      const paid = allOrders.filter(o => ['PROCESSING','APPROVED','COMPLETED'].includes(o.status));
+      const revenue = paid.reduce((s, o) => s + (o.amount||0), 0);
+      const aov = paid.length ? Math.round(revenue / paid.length) : 0;
+      const conversion = allOrders.length ? Math.round((paid.length / allOrders.length) * 100) : 0;
+      // revenue last 30 days
+      const daily = [];
+      for (let i = 29; i >= 0; i--) {
+        const d = new Date(); d.setDate(d.getDate() - i); d.setHours(0,0,0,0);
+        const dn = new Date(d); dn.setDate(dn.getDate()+1);
+        const dayOrders = paid.filter(o => { const t = new Date(o.createdAt); return t >= d && t < dn; });
+        daily.push({ day: d.toLocaleDateString('en', { day: '2-digit', month: 'short' }), revenue: dayOrders.reduce((s,o)=>s+(o.amount||0),0), orders: dayOrders.length });
+      }
+      // status breakdown
+      const statusBreakdown = {};
+      allOrders.forEach(o => { statusBreakdown[o.status] = (statusBreakdown[o.status]||0) + 1; });
+      const statusData = Object.entries(statusBreakdown).map(([name, value]) => ({ name, value }));
+      // top services
+      const svcMap = {};
+      paid.forEach(o => { if (!svcMap[o.serviceName]) svcMap[o.serviceName] = { name: o.serviceName, orders: 0, revenue: 0 }; svcMap[o.serviceName].orders++; svcMap[o.serviceName].revenue += (o.amount||0); });
+      const topServices = Object.values(svcMap).sort((a,b)=>b.revenue-a.revenue).slice(0, 8);
+      // category breakdown
+      const services = await db.collection('services').find({}, { projection: { _id: 0 } }).toArray();
+      const slugToCat = Object.fromEntries(services.map(s => [s.slug, s.category]));
+      const catMap = {};
+      paid.forEach(o => { const cat = slugToCat[o.serviceSlug] || 'other'; if (!catMap[cat]) catMap[cat] = 0; catMap[cat] += (o.amount||0); });
+      const catData = CATEGORIES.map(c => ({ name: c.name, value: catMap[c.id] || 0 })).filter(c => c.value > 0);
+      return ok({ revenue, aov, conversion, totalOrders: allOrders.length, paidOrders: paid.length, daily, statusData, topServices, catData });
+    }
+
+    // Admin: CMS content
+    if (route.startsWith('admin/content/')) {
+      const a = await requireAuth(req, ['admin', 'super_admin']); if (a.error) return a.error;
+      const type = route.split('/')[2];
+      if (!['blog','testimonials','partners'].includes(type)) return err('Invalid content type', 400);
+      const items = await db.collection(`cms_${type}`).find({}, { projection: { _id: 0 } }).sort({ createdAt: -1 }).toArray();
+      return ok({ items });
+    }
+
+    // Admin: staff (admins/operators) — super_admin only
+    if (route === 'admin/admins') {
+      const a = await requireAuth(req, ['super_admin']); if (a.error) return a.error;
+      const admins = await db.collection('users').find({ role: { $in: ['admin','super_admin','operator'] } }, { projection: { _id: 0, password: 0 } }).sort({ createdAt: -1 }).toArray();
+      return ok({ admins });
     }
 
     return err('Route not found', 404);
@@ -187,6 +261,7 @@ export async function POST(req, { params }) {
       const { email, password } = body;
       const user = await db.collection('users').findOne({ email: (email || '').toLowerCase() });
       if (!user) return err('Invalid credentials', 401);
+      if (user.suspended) return err('Your account has been suspended. Please contact support.', 403);
       const valid = await comparePassword(password, user.password);
       if (!valid) return err('Invalid credentials', 401);
       const token = signToken({ id: user.id, email: user.email, role: user.role, name: user.name });
@@ -274,6 +349,103 @@ export async function POST(req, { params }) {
       return ok({ ok: true });
     }
 
+    // Admin: create service
+    if (route === 'admin/services') {
+      const a = await requireAuth(req, ['admin','super_admin']); if (a.error) return a.error;
+      const { name, category, price, time, popular, govt, documents, description, active } = body;
+      if (!name || !category) return err('Name and category are required');
+      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      const existing = await db.collection('services').findOne({ slug });
+      if (existing) return err('A service with this name already exists');
+      const service = {
+        id: Date.now(), name, slug, category,
+        price: Number(price) || 0, time: time || '3-5 days',
+        popular: !!popular, govt: !!govt, active: active !== false,
+        documents: Array.isArray(documents) ? documents : (documents ? String(documents).split(',').map(s=>s.trim()).filter(Boolean) : ['Aadhaar Card', 'PAN Card', 'Passport size photo']),
+        description: description || `Apply for ${name} online through our verified service portal.`,
+        createdAt: new Date(),
+      };
+      await db.collection('services').insertOne(service);
+      const { _id, ...safe } = service;
+      return ok({ service: safe });
+    }
+    // Admin: update service
+    if (route.startsWith('admin/services/')) {
+      const a = await requireAuth(req, ['admin','super_admin']); if (a.error) return a.error;
+      const slug = route.split('/')[2];
+      const { name, category, price, time, popular, govt, documents, description, active } = body;
+      const set = {};
+      if (name !== undefined) set.name = name;
+      if (category !== undefined) set.category = category;
+      if (price !== undefined) set.price = Number(price) || 0;
+      if (time !== undefined) set.time = time;
+      if (popular !== undefined) set.popular = !!popular;
+      if (govt !== undefined) set.govt = !!govt;
+      if (active !== undefined) set.active = !!active;
+      if (description !== undefined) set.description = description;
+      if (documents !== undefined) set.documents = Array.isArray(documents) ? documents : String(documents).split(',').map(s=>s.trim()).filter(Boolean);
+      await db.collection('services').updateOne({ slug }, { $set: set });
+      const service = await db.collection('services').findOne({ slug }, { projection: { _id: 0 } });
+      return ok({ service });
+    }
+
+    // Admin: suspend/unsuspend customer
+    if (route.startsWith('admin/customers/') && route.endsWith('/suspend')) {
+      const a = await requireAuth(req, ['admin','super_admin']); if (a.error) return a.error;
+      const id = route.split('/')[2];
+      const customer = await db.collection('users').findOne({ id });
+      if (!customer) return err('Customer not found', 404);
+      const suspended = !customer.suspended;
+      await db.collection('users').updateOne({ id }, { $set: { suspended } });
+      return ok({ ok: true, suspended });
+    }
+
+    // Admin: CMS create
+    if (route.startsWith('admin/content/') && route.split('/').length === 3) {
+      const a = await requireAuth(req, ['admin','super_admin']); if (a.error) return a.error;
+      const type = route.split('/')[2];
+      if (!['blog','testimonials','partners'].includes(type)) return err('Invalid content type', 400);
+      const item = { id: uuid(), ...body, createdAt: new Date() };
+      await db.collection(`cms_${type}`).insertOne(item);
+      const { _id, ...safe } = item;
+      return ok({ item: safe });
+    }
+    // Admin: CMS update
+    if (route.startsWith('admin/content/') && route.split('/').length === 4) {
+      const a = await requireAuth(req, ['admin','super_admin']); if (a.error) return a.error;
+      const [, , type, id] = route.split('/');
+      if (!['blog','testimonials','partners'].includes(type)) return err('Invalid content type', 400);
+      const { _id, id: _ignore, createdAt, ...set } = body;
+      await db.collection(`cms_${type}`).updateOne({ id }, { $set: set });
+      const item = await db.collection(`cms_${type}`).findOne({ id }, { projection: { _id: 0 } });
+      return ok({ item });
+    }
+
+    // Admin: create staff — super_admin only
+    if (route === 'admin/admins') {
+      const a = await requireAuth(req, ['super_admin']); if (a.error) return a.error;
+      const { name, email, password, role } = body;
+      if (!name || !email || !password) return err('Missing fields');
+      if (!['admin','operator','super_admin'].includes(role)) return err('Invalid role');
+      const existing = await db.collection('users').findOne({ email: email.toLowerCase() });
+      if (existing) return err('Email already registered');
+      const user = { id: uuid(), name, email: email.toLowerCase(), password: await hashPassword(password), role, phone: '', createdAt: new Date() };
+      await db.collection('users').insertOne(user);
+      const { password: _, _id, ...safe } = user;
+      return ok({ user: safe });
+    }
+    // Admin: update staff role — super_admin only
+    if (route.startsWith('admin/admins/')) {
+      const a = await requireAuth(req, ['super_admin']); if (a.error) return a.error;
+      const id = route.split('/')[2];
+      const { role } = body;
+      if (!['admin','operator','super_admin'].includes(role)) return err('Invalid role');
+      if (id === a.user.id) return err('You cannot change your own role');
+      await db.collection('users').updateOne({ id }, { $set: { role } });
+      const user = await db.collection('users').findOne({ id }, { projection: { _id: 0, password: 0 } });
+      return ok({ user });
+    }
+
     return err('Route not found', 404);
   } catch (e) {
     console.error('POST error', e);
@@ -287,6 +459,26 @@ export async function DELETE(req, { params }) {
     await getDb();
     const p = (await params).path || [];
     const route = p.join('/');
+    if (route.startsWith('admin/services/')) {
+      const a = await requireAuth(req, ['admin','super_admin']); if (a.error) return a.error;
+      const slug = route.split('/')[2];
+      await db.collection('services').deleteOne({ slug });
+      return ok({ ok: true });
+    }
+    if (route.startsWith('admin/content/')) {
+      const a = await requireAuth(req, ['admin','super_admin']); if (a.error) return a.error;
+      const [, , type, id] = route.split('/');
+      if (!['blog','testimonials','partners'].includes(type)) return err('Invalid content type', 400);
+      await db.collection(`cms_${type}`).deleteOne({ id });
+      return ok({ ok: true });
+    }
+    if (route.startsWith('admin/admins/')) {
+      const a = await requireAuth(req, ['super_admin']); if (a.error) return a.error;
+      const id = route.split('/')[2];
+      if (id === a.user.id) return err('You cannot delete your own account');
+      await db.collection('users').deleteOne({ id, role: { $in: ['admin','operator'] } });
+      return ok({ ok: true });
+    }
     if (route.startsWith('orders/')) {
       const id = route.split('/')[1];
       const a = await requireAuth(req); if (a.error) return a.error;
