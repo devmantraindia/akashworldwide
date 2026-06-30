@@ -1,0 +1,549 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum UserRole {
+  CUSTOMER
+  OPERATOR
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PAYMENT_PENDING
+  PAYMENT_VERIFIED
+  PROCESSING
+  COMPLETED
+  REJECTED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PENDING_VERIFICATION
+  VERIFIED
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum DocumentStatus {
+  UPLOADED
+  VERIFIED
+  REJECTED
+}
+
+enum ServiceCategory {
+  GOVERNMENT
+  BANKING
+  INSURANCE
+  TRAVEL
+  RECHARGE
+  BILL_PAYMENT
+  CERTIFICATION
+  OTHER
+}
+
+// ============================================================================
+// USERS & AUTHENTICATION
+// ============================================================================
+
+model User {
+  id                  String    @id @default(cuid())
+  email               String    @unique @db.VarChar(255)
+  phone               String?   @unique @db.VarChar(20)
+  password            String    @db.Text
+  firstName           String?   @db.VarChar(100)
+  lastName            String?   @db.VarChar(100)
+  role                UserRole  @default(CUSTOMER)
+  isEmailVerified     Boolean   @default(false)
+  isPhoneVerified     Boolean   @default(false)
+  isActive            Boolean   @default(true)
+  isSuspended         Boolean   @default(false)
+  
+  // Profile
+  avatar              String?   @db.Text
+  address             String?   @db.Text
+  city                String?   @db.VarChar(100)
+  state               String?   @db.VarChar(100)
+  zipCode             String?   @db.VarChar(20)
+  country             String?   @db.VarChar(100) @default("India")
+  
+  // Relations
+  orders              Order[]
+  payments            Payment[]
+  wallet              Wallet?
+  tickets             SupportTicket[]
+  documents           Document[]
+  auditLogs           AuditLog[]
+  
+  // Metadata
+  lastLogin           DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([email])
+  @@index([phone])
+  @@index([role])
+}
+
+model Wallet {
+  id                  String    @id @default(cuid())
+  userId              String    @unique
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  balance             Decimal   @default(0) @db.Decimal(10, 2)
+  totalAdded          Decimal   @default(0) @db.Decimal(10, 2)
+  totalUsed           Decimal   @default(0) @db.Decimal(10, 2)
+  
+  transactions        WalletTransaction[]
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model WalletTransaction {
+  id                  String    @id @default(cuid())
+  walletId            String
+  wallet              Wallet    @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  
+  type                String    @db.VarChar(50) // ADD, DEDUCT, REFUND
+  amount              Decimal   @db.Decimal(10, 2)
+  description         String?   @db.Text
+  relatedOrderId      String?
+  
+  createdAt           DateTime  @default(now())
+
+  @@index([walletId])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// SERVICES & CATEGORIES
+// ============================================================================
+
+model ServiceCategory {
+  id                  String    @id @default(cuid())
+  name                String    @db.VarChar(100)
+  slug                String    @unique @db.VarChar(100)
+  description         String?   @db.Text
+  icon                String?   @db.VarChar(100)
+  image               String?   @db.Text
+  categoryType        ServiceCategory
+  isActive            Boolean   @default(true)
+  displayOrder        Int       @default(0)
+  
+  services            Service[]
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([slug])
+  @@index([categoryType])
+}
+
+model Service {
+  id                  String    @id @default(cuid())
+  name                String    @db.VarChar(255)
+  slug                String    @unique @db.VarChar(255)
+  description         String?   @db.LongText
+  shortDescription    String?   @db.VarChar(500)
+  icon                String?   @db.VarChar(100)
+  image               String?   @db.Text
+  bannerImage         String?   @db.Text
+  
+  categoryId          String
+  category            ServiceCategory @relation(fields: [categoryId], references: [id])
+  
+  serviceCharge       Decimal   @db.Decimal(10, 2)
+  governmentFee       Decimal   @default(0) @db.Decimal(10, 2)
+  processingTime      String    @db.VarChar(100) // e.g., "2-3 business days"
+  
+  benefits            String?   @db.LongText
+  eligibility         String?   @db.LongText
+  requiredDocuments   String?   @db.LongText // JSON array as string
+  faqs                String?   @db.LongText // JSON array as string
+  
+  isActive            Boolean   @default(true)
+  displayOrder        Int       @default(0)
+  views               Int       @default(0)
+  
+  formFields          FormField[]
+  orders              Order[]
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([categoryId])
+  @@index([slug])
+  @@index([isActive])
+}
+
+model FormField {
+  id                  String    @id @default(cuid())
+  serviceId           String
+  service             Service   @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  
+  name                String    @db.VarChar(255)
+  label               String    @db.VarChar(255)
+  type                String    @db.VarChar(50) // text, email, phone, select, checkbox, etc
+  placeholder         String?   @db.VarChar(255)
+  isRequired          Boolean   @default(false)
+  isVisible           Boolean   @default(true)
+  options             String?   @db.Text // JSON array for select options
+  validationPattern   String?   @db.Text
+  helpText            String?   @db.Text
+  displayOrder        Int       @default(0)
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([serviceId])
+}
+
+// ============================================================================
+// ORDERS & PAYMENTS
+// ============================================================================
+
+model Order {
+  id                  String    @id @default(cuid())
+  orderNumber         String    @unique @db.VarChar(50)
+  
+  userId              String
+  user                User      @relation(fields: [userId], references: [id])
+  
+  serviceId           String
+  service             Service   @relation(fields: [serviceId], references: [id])
+  
+  status              OrderStatus @default(PENDING)
+  
+  // Pricing
+  serviceCharge       Decimal   @db.Decimal(10, 2)
+  governmentFee       Decimal   @db.Decimal(10, 2)
+  discount            Decimal   @default(0) @db.Decimal(10, 2)
+  totalAmount         Decimal   @db.Decimal(10, 2)
+  
+  // Form Data
+  formData            String?   @db.LongText // JSON
+  
+  // Documents
+  documents           Document[]
+  
+  // Payment
+  payment             Payment?
+  paymentId           String?
+  
+  // Tracking
+  referenceNumber     String?   @db.VarChar(100)
+  notes               String?   @db.Text
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  completedAt         DateTime?
+
+  @@index([userId])
+  @@index([serviceId])
+  @@index([status])
+  @@index([orderNumber])
+  @@index([createdAt])
+}
+
+model Payment {
+  id                  String    @id @default(cuid())
+  orderId             String    @unique
+  order               Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  userId              String
+  user                User      @relation(fields: [userId], references: [id])
+  
+  amount              Decimal   @db.Decimal(10, 2)
+  status              PaymentStatus @default(PENDING)
+  method              String    @db.VarChar(50) @default("UPI") // UPI, BANK_TRANSFER, etc
+  
+  // Manual QR Payment
+  qrCodeId            String?
+  qrCode              QRCode?   @relation(fields: [qrCodeId], references: [id])
+  paymentScreenshot   String?   @db.Text
+  utrNumber           String?   @db.VarChar(50)
+  payerName           String?   @db.VarChar(100)
+  payerPhone          String?   @db.VarChar(20)
+  paymentDateTime     DateTime?
+  
+  // Verification
+  verifiedBy          String?
+  verificationNotes   String?   @db.Text
+  verifiedAt          DateTime?
+  
+  transactionId       String?   @db.VarChar(100)
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([orderId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model QRCode {
+  id                  String    @id @default(cuid())
+  title               String    @db.VarChar(255)
+  qrImage             String    @db.LongText
+  upiId               String?   @db.VarChar(100)
+  accountName         String?   @db.VarChar(100)
+  accountNumber       String?   @db.VarChar(50)
+  bankName            String?   @db.VarChar(100)
+  ifscCode            String?   @db.VarChar(20)
+  description         String?   @db.Text
+  isActive            Boolean   @default(true)
+  
+  payments            Payment[]
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([isActive])
+}
+
+// ============================================================================
+// DOCUMENTS
+// ============================================================================
+
+model Document {
+  id                  String    @id @default(cuid())
+  orderId             String
+  order               Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  userId              String
+  user                User      @relation(fields: [userId], references: [id])
+  
+  type                String    @db.VarChar(100) // Document type like "ID", "Address Proof"
+  fileName            String    @db.VarChar(255)
+  fileUrl             String    @db.Text
+  fileSize            Int       // in bytes
+  fileType            String    @db.VarChar(50) // pdf, jpg, png, etc
+  
+  status              DocumentStatus @default(UPLOADED)
+  rejectionReason     String?   @db.Text
+  
+  uploadedAt          DateTime  @default(now())
+  verifiedAt          DateTime?
+
+  @@index([orderId])
+  @@index([userId])
+  @@index([status])
+}
+
+// ============================================================================
+// SUPPORT & TICKETS
+// ============================================================================
+
+model SupportTicket {
+  id                  String    @id @default(cuid())
+  ticketNumber        String    @unique @db.VarChar(50)
+  
+  userId              String
+  user                User      @relation(fields: [userId], references: [id])
+  
+  subject             String    @db.VarChar(255)
+  description         String    @db.LongText
+  category            String    @db.VarChar(100)
+  priority            String    @default("MEDIUM") @db.VarChar(50) // LOW, MEDIUM, HIGH, URGENT
+  status              String    @default("OPEN") @db.VarChar(50) // OPEN, IN_PROGRESS, RESOLVED, CLOSED
+  
+  attachments         String?   @db.Text // JSON array of file URLs
+  
+  replies             TicketReply[]
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  resolvedAt          DateTime?
+
+  @@index([userId])
+  @@index([status])
+  @@index([priority])
+}
+
+model TicketReply {
+  id                  String    @id @default(cuid())
+  ticketId            String
+  ticket              SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  
+  message             String    @db.LongText
+  attachments         String?   @db.Text
+  
+  createdBy           String    // User ID
+  
+  createdAt           DateTime  @default(now())
+
+  @@index([ticketId])
+}
+
+// ============================================================================
+// CMS & CONTENT
+// ============================================================================
+
+model BlogPost {
+  id                  String    @id @default(cuid())
+  title               String    @db.VarChar(255)
+  slug                String    @unique @db.VarChar(255)
+  excerpt             String?   @db.VarChar(500)
+  content             String    @db.LongText
+  featuredImage       String?   @db.Text
+  
+  author              String    @db.VarChar(100)
+  category            String?   @db.VarChar(100)
+  tags                String?   @db.Text // JSON array
+  
+  isPublished         Boolean   @default(false)
+  publishedAt         DateTime?
+  views               Int       @default(0)
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([slug])
+  @@index([isPublished])
+}
+
+model Testimonial {
+  id                  String    @id @default(cuid())
+  name                String    @db.VarChar(100)
+  email               String    @db.VarChar(255)
+  role                String?   @db.VarChar(100)
+  company             String?   @db.VarChar(100)
+  image               String?   @db.Text
+  testimonial         String    @db.LongText
+  rating              Int       // 1-5
+  isApproved          Boolean   @default(false)
+  displayOrder        Int       @default(0)
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([isApproved])
+}
+
+model Partner {
+  id                  String    @id @default(cuid())
+  name                String    @db.VarChar(100)
+  logo                String    @db.Text
+  description         String?   @db.Text
+  website             String?   @db.VarChar(255)
+  displayOrder        Int       @default(0)
+  isActive            Boolean   @default(true)
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([isActive])
+}
+
+model Coupon {
+  id                  String    @id @default(cuid())
+  code                String    @unique @db.VarChar(50)
+  description         String?   @db.Text
+  discountType        String    @db.VarChar(50) // PERCENTAGE, FIXED
+  discountValue       Decimal   @db.Decimal(10, 2)
+  maxUses             Int?
+  currentUses         Int       @default(0)
+  minOrderAmount      Decimal?  @db.Decimal(10, 2)
+  
+  validFrom           DateTime
+  validTo             DateTime
+  isActive            Boolean   @default(true)
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([code])
+  @@index([isActive])
+}
+
+// ============================================================================
+// NOTIFICATIONS
+// ============================================================================
+
+model Notification {
+  id                  String    @id @default(cuid())
+  userId              String
+  
+  title               String    @db.VarChar(255)
+  message             String    @db.Text
+  type                String    @db.VarChar(50) // ORDER, PAYMENT, ADMIN, etc
+  relatedOrderId      String?
+  
+  isRead              Boolean   @default(false)
+  readAt              DateTime?
+  
+  createdAt           DateTime  @default(now())
+
+  @@index([userId])
+  @@index([isRead])
+}
+
+// ============================================================================
+// AUDIT & LOGS
+// ============================================================================
+
+model AuditLog {
+  id                  String    @id @default(cuid())
+  userId              String
+  user                User      @relation(fields: [userId], references: [id])
+  
+  action              String    @db.VarChar(255)
+  entity              String    @db.VarChar(100) // User, Order, Payment, etc
+  entityId            String    @db.VarChar(100)
+  oldValues           String?   @db.LongText // JSON
+  newValues           String?   @db.LongText // JSON
+  ipAddress           String?   @db.VarChar(50)
+  userAgent           String?   @db.Text
+  
+  createdAt           DateTime  @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model SystemLog {
+  id                  String    @id @default(cuid())
+  level               String    @db.VarChar(50) // INFO, WARNING, ERROR
+  message             String    @db.LongText
+  context             String?   @db.LongText // JSON
+  
+  createdAt           DateTime  @default(now())
+
+  @@index([level])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// SETTINGS
+// ============================================================================
+
+model SiteSetting {
+  id                  String    @id @default(cuid())
+  key                 String    @unique @db.VarChar(255)
+  value               String    @db.LongText // JSON
+  description         String?   @db.Text
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([key])
+}
